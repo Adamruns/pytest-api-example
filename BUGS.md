@@ -27,3 +27,12 @@
 - **Actual:** Order is mutated immediately, validation happens after, and the 400 response does not roll back the mutation.
 - **Impact:** Subsequent reads of the order will show the invalid status. In a persistent datastore this would be data corruption. In this in-memory implementation, it persists until server restart.
 - **Not fixed** because modifying the system under test is outside the scope of the test tasks. Documented here for the reviewer.
+
+## Bug 4: PATCH handler missing `available` status branch — FIXED
+
+- **File:** `app.py`, lines 157–164
+- **Severity:** Medium — valid status rejected as invalid
+- **Description:** The `PATCH /store/order/{order_id}` handler only handled `pending` and `sold` in its status-update branches, falling through to the `else` → 400 error for `available`. Since `available` is a valid member of `PET_STATUS`, attempting to patch an order back to `available` would incorrectly return `400 Invalid status`.
+- **Expected:** PATCH with `{"status": "available"}` should succeed and update the pet's status to `available`.
+- **Actual:** The request fell through to the `else` branch and returned 400.
+- **Fix:** Added an `elif update_data['status'] == 'available'` branch to update the pet's status accordingly.
