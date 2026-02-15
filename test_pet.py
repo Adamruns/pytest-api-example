@@ -57,6 +57,30 @@ def test_get_by_id_404(pet_id):
         assert_that(response.text, contains_string("Not Found"))
 
 
+def test_create_pet():
+    """POST /pets/ with valid data returns 201 and the new pet matches the schema."""
+    import time
+    unique_id = int(time.time() * 1000) % 1_000_000
+    new_pet = {"id": unique_id, "name": "testpet", "type": "cat", "status": "available"}
+
+    response = api_helpers.post_api_data("/pets/", new_pet)
+
+    assert_that(response.status_code, is_(201))
+    validate(instance=response.json(), schema=schemas.pet)
+    assert_that(response.json()['name'], is_("testpet"))
+
+
+def test_create_pet_duplicate_409():
+    """POST /pets/ with an ID that already exists returns 409."""
+    # Pet ID 0 ("snowball") is part of the seed data
+    duplicate_pet = {"id": 0, "name": "duplicate", "type": "dog", "status": "available"}
+
+    response = api_helpers.post_api_data("/pets/", duplicate_pet)
+
+    assert_that(response.status_code, is_(409))
+    assert_that(response.json()["message"], contains_string("already exists"))
+
+
 def test_find_by_status_400_invalid_status():
     """Regression test for Bug 2: invalid status error message includes the actual value.
 

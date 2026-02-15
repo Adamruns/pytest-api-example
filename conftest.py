@@ -7,7 +7,7 @@ from hamcrest import assert_that, is_, greater_than
 
 @pytest.fixture
 def create_order():
-    """Create a fresh order using an available pet."""
+    """Create a fresh order using an available pet, then restore the pet afterwards."""
     # Find an available pet
     response = api_helpers.get_api_data("/pets/findByStatus", {"status": "available"})
     assert_that(response.status_code, is_(200))
@@ -23,4 +23,9 @@ def create_order():
     order_data = order_response.json()
     validate(instance=order_data, schema=schemas.order)
 
-    return order_data
+    yield order_data
+
+    # Teardown: restore the pet to "available" so subsequent tests
+    # are not affected by state changes made during the test.
+    order_id = order_data['id']
+    api_helpers.patch_api_data(f"/store/order/{order_id}", {"status": "available"})
