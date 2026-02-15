@@ -23,7 +23,28 @@ order = {
     "type": "object",
     "required": ["id", "pet_id"],
     "properties": {
-        "id": {"type": "string"},
-        "pet_id": {"type": "integer"}
-    }
+        "id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "pet_id": {
+            "type": "integer"
+        },
+        "status": {
+            "type": "string",
+            "enum": ["available", "sold", "pending"]
+        }
+    },
+    "additionalProperties": False
+}
+
+order_update_response = {
+    "type": "object",
+    "required": ["message"],
+    "properties": {
+        "message": {
+            "type": "string"
+        }
+    },
+    "additionalProperties": False
 }

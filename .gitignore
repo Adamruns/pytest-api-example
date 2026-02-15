@@ -1,6 +1,8 @@
 __pycache__
 .pytest_cache
 .idea/
+.venv/
+venv/
 test_scratch.py
 pet_scratch.py
 store_scratch.py
