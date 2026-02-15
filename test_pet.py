@@ -25,7 +25,7 @@ def test_find_by_status_200(status):
 
     response = api_helpers.get_api_data(test_endpoint, params)
 
-    assert response.status_code == 200
+    assert_that(response.status_code, is_(200))
 
     pets = response.json()
     for pet in pets:

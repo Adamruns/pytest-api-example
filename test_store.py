@@ -20,7 +20,10 @@ def create_order():
     order_response = api_helpers.post_api_data("/store/order", {"pet_id": pet_id})
     assert order_response.status_code == 201
 
-    return order_response.json()
+    order_data = order_response.json()
+    validate(instance=order_data, schema=schemas.order)
+
+    return order_data
 
 
 def test_patch_order_by_id(create_order):

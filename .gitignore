@@ -1,5 +1,6 @@
 __pycache__
 .pytest_cache
+.idea/
 test_scratch.py
 pet_scratch.py
 store_scratch.py

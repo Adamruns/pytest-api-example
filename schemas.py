@@ -21,11 +21,9 @@ pet = {
 
 order = {
     "type": "object",
-    "required": ["id", "pet_id", "quantity", "status"],
+    "required": ["id", "pet_id"],
     "properties": {
-        "id": {"type": "integer"},
-        "pet_id": {"type": "integer"},
-        "quantity": {"type": "integer"},
-        "status": {"type": "string", "enum": ["placed", "approved", "delivered"]}
+        "id": {"type": "string"},
+        "pet_id": {"type": "integer"}
     }
 }
