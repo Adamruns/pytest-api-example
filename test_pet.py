@@ -1,15 +1,4 @@
-# Bugs found during testing:
-#
-# Bug 1: schemas.py had pet name type defined as "integer" instead of "string".
-#   The pet name field (e.g. "snowball", "ranger") is clearly a string, but the
-#   schema incorrectly specified {"type": "integer"}, causing schema validation
-#   to fail on valid API responses. Fixed by changing the type to "string".
-#
-# Bug 2: app.py findByStatus endpoint had a missing f-string prefix on the error
-#   message for invalid status values. The line read 'Invalid pet status {status}'
-#   instead of f'Invalid pet status {status}', causing it to print the literal
-#   text "{status}" rather than the actual status value passed by the caller.
-#   Fixed by adding the f-string prefix.
+# Bugs found during testing are documented in BUGS.md
 
 from jsonschema import validate
 import pytest
@@ -54,3 +43,17 @@ def test_get_by_id_404(pet_id):
     response = api_helpers.get_api_data(test_endpoint)
 
     assert_that(response.status_code, is_(404))
+
+
+def test_find_by_status_400_invalid_status():
+    """Regression test for Bug 2: invalid status error message includes the actual value.
+
+    The original code used a plain string instead of an f-string, so the error
+    message contained the literal text '{status}' instead of the submitted value.
+    See BUGS.md for details.
+    """
+    invalid_status = "nonexistent_status"
+    response = api_helpers.get_api_data("/pets/findByStatus", {"status": invalid_status})
+
+    assert_that(response.status_code, is_(400))
+    assert_that(response.json()["message"], contains_string(invalid_status))

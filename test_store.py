@@ -1,4 +1,5 @@
 from jsonschema import validate
+import pytest
 import schemas
 import api_helpers
 from hamcrest import assert_that, contains_string, is_
@@ -28,3 +29,17 @@ def test_patch_nonexistent_order_returns_404():
     """PATCH /store/order/{id} with a nonexistent order ID returns 404."""
     response = api_helpers.patch_api_data("/store/order/nonexistent-id", {"status": "sold"})
     assert_that(response.status_code, is_(404))
+
+
+def test_patch_invalid_status_returns_400(create_order):
+    """PATCH with an invalid status value returns 400.
+
+    This also exposes Bug 3 (see BUGS.md): the handler mutates the order's
+    status before validating it, so even though the API returns 400, the
+    order object in memory is corrupted with the invalid value.
+    """
+    order = create_order
+    order_id = order['id']
+
+    response = api_helpers.patch_api_data(f"/store/order/{order_id}", {"status": "invalid_status"})
+    assert_that(response.status_code, is_(400))

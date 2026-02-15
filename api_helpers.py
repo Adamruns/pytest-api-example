@@ -1,6 +1,8 @@
+import os
+
 import requests
 
-base_url = 'http://localhost:5000'
+base_url = os.environ.get('API_BASE_URL', 'http://localhost:5000')
 
 # GET requests
 def get_api_data(endpoint, params = {}):
