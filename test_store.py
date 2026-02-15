@@ -4,13 +4,39 @@ import schemas
 import api_helpers
 from hamcrest import assert_that, contains_string, is_
 
-'''
-TODO: Finish this test by...
-1) Creating a function to test the PATCH request /store/order/{order_id}
-2) *Optional* Consider using @pytest.fixture to create unique test data for each run
-2) *Optional* Consider creating an 'Order' model in schemas.py and validating it in the test
-3) Validate the response codes and values
-4) Validate the response message "Order and pet status updated successfully"
-'''
-def test_patch_order_by_id():
-    pass
+
+@pytest.fixture
+def create_order():
+    """Create a fresh order using an available pet."""
+    # Find an available pet
+    response = api_helpers.get_api_data("/pets/findByStatus", {"status": "available"})
+    assert response.status_code == 200
+    available_pets = response.json()
+    assert len(available_pets) > 0, "No available pets to create an order"
+
+    pet_id = available_pets[0]['id']
+
+    # Place a new order for that pet
+    order_response = api_helpers.post_api_data("/store/order", {"pet_id": pet_id})
+    assert order_response.status_code == 201
+
+    return order_response.json()
+
+
+def test_patch_order_by_id(create_order):
+    order = create_order
+    order_id = order['id']
+    pet_id = order['pet_id']
+
+    # PATCH the order status to "sold"
+    response = api_helpers.patch_api_data(f"/store/order/{order_id}", {"status": "sold"})
+
+    assert_that(response.status_code, is_(200))
+
+    resp_json = response.json()
+    assert_that(resp_json["message"], contains_string("Order and pet status updated successfully"))
+
+    # Verify the pet status was actually updated to "sold"
+    pet_response = api_helpers.get_api_data(f"/pets/{pet_id}")
+    assert_that(pet_response.status_code, is_(200))
+    assert_that(pet_response.json()['status'], is_("sold"))

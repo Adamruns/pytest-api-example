@@ -98,7 +98,7 @@ class PetFindByStatus(Resource):
         """Find pets by status"""
         status = request.args.get('status')
         if status not in PET_STATUS:
-            api.abort(400, 'Invalid pet status {status}')
+            api.abort(400, f'Invalid pet status {status}')
         if status:
             filtered_pets = [pet for pet in pets if pet['status'] == status]
             return filtered_pets
