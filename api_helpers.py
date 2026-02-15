@@ -5,7 +5,9 @@ import requests
 base_url = os.environ.get('API_BASE_URL', 'http://localhost:5000')
 
 # GET requests
-def get_api_data(endpoint, params = {}):
+def get_api_data(endpoint, params=None):
+    if params is None:
+        params = {}
     response = requests.get(f'{base_url}{endpoint}', params=params)
     return response
 

@@ -2,9 +2,10 @@
 
 from jsonschema import validate
 import pytest
+import requests
 import schemas
 import api_helpers
-from hamcrest import assert_that, contains_string, is_
+from hamcrest import assert_that, contains_string, instance_of, is_
 
 
 def test_pet_schema():
@@ -12,7 +13,7 @@ def test_pet_schema():
 
     response = api_helpers.get_api_data(test_endpoint)
 
-    assert response.status_code == 200
+    assert_that(response.status_code, is_(200))
 
     # Validate the response schema against the defined schema in schemas.py
     validate(instance=response.json(), schema=schemas.pet)
@@ -30,7 +31,7 @@ def test_find_by_status_200(status):
     assert_that(response.status_code, is_(200))
 
     pets = response.json()
-    assert isinstance(pets, list), "Expected response to be a list"
+    assert_that(pets, instance_of(list))
     for pet in pets:
         assert_that(pet['status'], is_(status))
         validate(instance=pet, schema=schemas.pet)
@@ -43,6 +44,17 @@ def test_get_by_id_404(pet_id):
     response = api_helpers.get_api_data(test_endpoint)
 
     assert_that(response.status_code, is_(404))
+
+    # The API returns a JSON body with a "message" key for known-format IDs.
+    # For IDs that don't match the route converter (e.g. negative ints),
+    # Flask returns a plain-HTML 404 instead. In either case, the response
+    # text should indicate the resource was not found.
+    try:
+        body = response.json()
+        assert_that(body["message"], contains_string("not found"))
+    except (KeyError, requests.exceptions.JSONDecodeError):
+        # Fallback: verify the raw text mentions "Not Found"
+        assert_that(response.text, contains_string("Not Found"))
 
 
 def test_find_by_status_400_invalid_status():
